@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script
+      src="https://api.okhi.io/v5/okweb/v2?clientKey=01JPC539E8WSCBNEZ3HBRRPYQR&branchId=67d512de9e4514319b4be800&callback=initOkCollect"
+      async
+      defer
+    ></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OkCollect Verification Test</title>
+  </head>
+  <body>
+    <div
+      style="
+        margin: 0 auto;
+        max-width: 500px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      "
+    >
+      <div id="address"></div>
+      <button id="submitVerification">Submit Verification</button>
+    </div>
+
+    <script>
+      function initOkCollect() {
+        const okCollectInstance = new okcollect({
+          target: document.querySelector("#address"),
+          props: {
+            API_KEY: "01JPC539E8WSCBNEZ3HBRRPYQR",
+            userFirstName: "Daniel",
+            userLastName: "Chidebere",
+            userPhoneNumber: "+2347012575841",
+            onAddressSelected: async (userAddress) => {
+              console.log("Selected Address:", userAddress);
+              document.getElementById("submitVerification").onclick =
+                async () => {
+                  const payload = {
+                    provider: "okhi",
+                    data: userAddress,
+                    status: "PENDING",
+                    metadata: { test: true },
+                  };
+
+                  const response = await fetch(
+                    "http://localhost:3000/kyc/verification",
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(payload),
+                    }
+                  );
+
+                  const result = await response.json();
+                  console.log("Server Response:", result);
+                  alert("Verification submitted. Check console for response.");
+                };
+            },
+            onError: (error) => {
+              console.error("OkHi Error:", error);
+            },
+            styleSettings: {
+              primaryColor: "#005D67",
+              highlightColor: "#85FFC7",
+            },
+            appSettings: {
+              name: "My App",
+              version: "1.0.0",
+            },
+          },
+        });
+
+        document.querySelector("#firstName").addEventListener("input", (ev) => {
+          okCollectInstance.$set({ userFirstName: ev.target.value });
+        });
+        document.querySelector("#lastName").addEventListener("input", (ev) => {
+          okCollectInstance.$set({ userLastName: ev.target.value });
+        });
+        document
+          .querySelector("#phoneNumber")
+          .addEventListener("input", (ev) => {
+            okCollectInstance.$set({ userPhoneNumber: ev.target.value });
+          });
+      }
+    </script>
+  </body>
+</html>
